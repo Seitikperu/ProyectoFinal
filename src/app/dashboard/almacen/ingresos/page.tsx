@@ -1,6 +1,7 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useIngresos } from '@/lib/hooks/useAlmacen'
+import ModalIngreso from '@/components/almacen/ModalIngreso'
 import type { AlmacenFilter } from '@/types/database'
 
 const fmtUSD = (n: number | null) => n == null ? '—' : '$' + n.toLocaleString('es-NI', { minimumFractionDigits: 2 })
@@ -9,7 +10,8 @@ const fmtFecha = (s: string | null) => s ? new Date(s + 'T00:00:00').toLocaleDat
 export default function IngresosPage() {
   const [filter, setFilter] = useState<AlmacenFilter>({})
   const [page, setPage] = useState(1)
-  const { data, count, totalPages, loading, error } = useIngresos(filter, page, 25)
+  const { data, count, totalPages, loading, error, refetch } = useIngresos(filter, page, 25)
+  const [showModal, setShowModal] = useState(false)
 
   return (
     <div className="p-6 space-y-4 max-w-screen-2xl mx-auto">
@@ -18,11 +20,17 @@ export default function IngresosPage() {
           <h1 className="text-xl font-bold text-white">Ingresos al Almacén</h1>
           <p className="text-slate-400 text-sm mt-0.5">{loading ? 'Cargando...' : count.toLocaleString('es-NI') + ' registros'}</p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-          + Nuevo Ingreso
+        <button
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+          </svg>
+          Nuevo Ingreso
         </button>
       </div>
 
+      {/* Filtros */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input type="text" placeholder="Buscar código, descripción, proveedor..."
@@ -37,6 +45,7 @@ export default function IngresosPage() {
 
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4"><p className="text-red-400 text-sm">{error}</p></div>}
 
+      {/* Tabla */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -76,12 +85,21 @@ export default function IngresosPage() {
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
             <p className="text-slate-400 text-xs">Página {page} de {totalPages} — {count.toLocaleString('es-NI')} registros</p>
             <div className="flex gap-1">
-              <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1} className="px-3 py-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 rounded-lg hover:bg-slate-800">← Anterior</button>
-              <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages} className="px-3 py-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 rounded-lg hover:bg-slate-800">Siguiente →</button>
+              <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
+                className="px-3 py-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 rounded-lg hover:bg-slate-800">← Anterior</button>
+              <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
+                className="px-3 py-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 rounded-lg hover:bg-slate-800">Siguiente →</button>
             </div>
           </div>
         )}
       </div>
+
+      {showModal && (
+        <ModalIngreso
+          onClose={() => setShowModal(false)}
+          onSaved={() => { refetch(); setShowModal(false) }}
+        />
+      )}
     </div>
   )
 }
