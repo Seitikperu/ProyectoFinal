@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
+import { showToast } from '@/components/ui/Toast'
 import type { Material, Proveedor } from '@/types/database'
 
 const sb = getSupabaseClient()
@@ -177,7 +178,9 @@ export default function ModalIngreso({ onClose, onSaved }: Props) {
       if (err) throw err
       onSaved()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al guardar')
+      const msg = e instanceof Error ? e.message : 'Error al guardar'
+      setError(msg)
+      showToast('error', 'Error al guardar ingreso', msg)
     } finally {
       setGuardando(false)
     }
