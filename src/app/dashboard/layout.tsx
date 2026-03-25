@@ -10,6 +10,7 @@ const NAV = [
     { label: 'Dashboard',  href: '/dashboard' },
     { label: 'Ingresos',   href: '/dashboard/almacen/ingresos' },
     { label: 'Salidas',    href: '/dashboard/almacen/salidas' },
+    { label: 'Stock ⦿',    href: '/dashboard/almacen/stock' },
     { label: 'Inventario', href: '/dashboard/almacen/inventario' },
     { label: 'Materiales', href: '/dashboard/almacen/materiales' },
   ]},

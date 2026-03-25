@@ -146,3 +146,98 @@ export function useCentrosCosto(soloAlmacen = false) {
 
   return { data, loading }
 }
+
+// ── STOCK EN TIEMPO REAL ──────────────────────────────────────────────────────
+// Calcula stock disponible por material: total_ingresado - total_salido
+// Se actualiza automáticamente cuando hay INSERT/UPDATE/DELETE en las tablas
+// ingreso_almacen, salida_almacen o inventario (via Supabase Realtime WebSocket)
+
+export interface StockItem {
+  codigo: string
+  descripcion: string
+  unidad: string
+  familia: string
+  total_ingresado: number
+  total_salido: number
+  stock_disponible: number
+  ultimo_ingreso: string | null
+  ultima_salida: string | null
+}
+
+export function useStockRealtime(almacen?: string) {
+  const [stock, setStock] = useState<StockItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+
+  const calcularStock = useCallback(async () => {
+    try {
+      // Consulta ingresos agrupados por código
+      let qI = sb.from('ingreso_almacen')
+        .select('codigo,descripcion:descripcion,unidad,familia,cantidad,fecha')
+        .not('codigo', 'is', null)
+      if (almacen) qI = qI.eq('almacen', almacen)
+      const { data: ingresos } = await qI
+
+      // Consulta salidas agrupadas por código
+      let qS = sb.from('salida_almacen')
+        .select('codigo,cantidad,fecha')
+        .not('codigo', 'is', null)
+      if (almacen) qS = qS.eq('almacen', almacen)
+      const { data: salidas } = await qS
+
+      if (!ingresos) { setLoading(false); return }
+
+      // Sumar ingresos por código
+      const mapI: Record<string, { descripcion: string; unidad: string; familia: string; total: number; ultima_fecha: string | null }> = {}
+      for (const r of ingresos) {
+        const k = r.codigo as string
+        if (!mapI[k]) mapI[k] = { descripcion: r.descripcion ?? '', unidad: r.unidad ?? '', familia: r.familia ?? '', total: 0, ultima_fecha: null }
+        mapI[k].total += r.cantidad ?? 0
+        if (!mapI[k].ultima_fecha || (r.fecha && r.fecha > mapI[k].ultima_fecha!)) mapI[k].ultima_fecha = r.fecha
+      }
+
+      // Sumar salidas por código
+      const mapS: Record<string, { total: number; ultima_fecha: string | null }> = {}
+      for (const r of (salidas ?? [])) {
+        const k = r.codigo as string
+        if (!mapS[k]) mapS[k] = { total: 0, ultima_fecha: null }
+        mapS[k].total += r.cantidad ?? 0
+        if (!mapS[k].ultima_fecha || (r.fecha && r.fecha > mapS[k].ultima_fecha!)) mapS[k].ultima_fecha = r.fecha
+      }
+
+      // Construir resultado final
+      const resultado: StockItem[] = Object.entries(mapI).map(([codigo, ing]) => ({
+        codigo,
+        descripcion: ing.descripcion,
+        unidad: ing.unidad,
+        familia: ing.familia,
+        total_ingresado: ing.total,
+        total_salido: mapS[codigo]?.total ?? 0,
+        stock_disponible: ing.total - (mapS[codigo]?.total ?? 0),
+        ultimo_ingreso: ing.ultima_fecha,
+        ultima_salida: mapS[codigo]?.ultima_fecha ?? null,
+      }))
+
+      setStock(resultado.sort((a, b) => b.stock_disponible - a.stock_disponible))
+      setLastUpdate(new Date())
+    } finally {
+      setLoading(false)
+    }
+  }, [almacen])
+
+  useEffect(() => {
+    calcularStock()
+
+    // Suscripción en tiempo real — se dispara ante cualquier cambio en las 3 tablas
+    const channel = sb
+      .channel('stock-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ingreso_almacen' }, calcularStock)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'salida_almacen' }, calcularStock)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventario' }, calcularStock)
+      .subscribe()
+
+    return () => { sb.removeChannel(channel) }
+  }, [calcularStock])
+
+  return { stock, loading, lastUpdate, refetch: calcularStock }
+}
