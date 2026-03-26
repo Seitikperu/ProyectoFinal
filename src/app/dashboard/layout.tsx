@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ToastContainer } from '@/components/ui/Toast'
+import { PROYECTOS, Proyecto } from '@/lib/context/ProyectoContext'
 
-// ── Tipo de sesión custom (tabla usuarios) ────────────────────────────────────
 interface CisUser {
   id: number
   nombre: string
@@ -40,11 +40,11 @@ const NAV = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const [user, setUser] = useState<CisUser | null>(null)
-  const [open, setOpen] = useState(false)
+  const [user,    setUser]    = useState<CisUser | null>(null)
+  const [proyecto, setProyecto] = useState<Proyecto | null>(null)
+  const [open,    setOpen]    = useState(false)
   const [checked, setChecked] = useState(false)
 
-  // ── Validar sesión custom al montar ────────────────────────────────────
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('cis_usuario')
@@ -53,6 +53,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return
       }
       setUser(JSON.parse(raw) as CisUser)
+
+      // Leer proyecto seleccionado
+      const rawP = sessionStorage.getItem('cis_proyecto')
+      if (rawP) setProyecto(JSON.parse(rawP) as Proyecto)
+      else router.replace('/select-project')  // sin proyecto → volver a seleccionar
     } catch {
       router.replace('/login')
     } finally {
@@ -62,6 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   function logout() {
     sessionStorage.removeItem('cis_usuario')
+    sessionStorage.removeItem('cis_proyecto')
     router.push('/login')
   }
 
@@ -80,17 +86,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const Sidebar = () => (
     <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800 w-60">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-800">
-        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-          </svg>
+      {/* Logo + Proyecto activo */}
+      <div className="px-4 py-5 border-b border-slate-800">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-white font-semibold text-sm leading-tight">CIS Nicaragua</p>
+            <p className="text-slate-500 text-xs">Unidad Minera Jabalí</p>
+          </div>
         </div>
-        <div>
-          <p className="text-white font-semibold text-sm leading-tight">CIS Nicaragua</p>
-          <p className="text-slate-500 text-xs">Unidad Minera Jabalí</p>
-        </div>
+        {/* Badge de proyecto activo */}
+        {proyecto && (
+          <div className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 border ${proyecto.colorBg}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-base">{proyecto.icono}</span>
+              <div>
+                <p className={`text-xs font-semibold leading-tight ${proyecto.color}`}>{proyecto.nombre}</p>
+                <p className="text-slate-500 text-xs">{proyecto.id}</p>
+              </div>
+            </div>
+            <Link href="/select-project" className="text-slate-500 hover:text-white transition-colors" title="Cambiar proyecto">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+              </svg>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Nav */}

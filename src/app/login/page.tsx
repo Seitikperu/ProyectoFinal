@@ -66,9 +66,8 @@ function LoginForm() {
         id_personal: usuario.id_personal,
       }))
 
-      // Redirigir al dashboard
-      router.push('/dashboard')
-      router.refresh()
+      // Redirigir a selección de proyecto
+      router.push('/select-project')
     })
   }
 
