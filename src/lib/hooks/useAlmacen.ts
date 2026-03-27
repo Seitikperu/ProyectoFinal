@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
-import { showToast } from '@/lib/toast'
 import type { IngresoAlmacen, SalidaAlmacen, Material, CentroCosto, AlmacenFilter, PaginationResult } from '@/types/database'
 
 const sb = getSupabaseClient()
@@ -102,7 +101,7 @@ export function useSalidas(filter: AlmacenFilter = {}, page = 1, pageSize = 25) 
     const { data, count, error } = await q
     if (error) {
       console.error('Error fetching salidas:', error)
-      showToast && showToast('error', 'Error listando salidas', error.message)
+      console.error('Error listando salidas:', error.message)
     }
     setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
     setLoading(false)
@@ -125,7 +124,7 @@ export function useMateriales(busqueda = '', page = 1, pageSize = 20) {
   const [result, setResult] = useState<PaginationResult<Material>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  useEffect(() => h{
     async function fetchData() {
       setLoading(true)
       let q = sb.from('materiales').select('*', { count: 'exact' })
