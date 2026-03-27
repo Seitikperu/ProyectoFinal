@@ -95,7 +95,8 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
     const { data } = await sb.from('materiales')
       .select('id,codigo,descripcion,unidad_medida,familia,marca_equipo')
       .or(`codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
-      .eq('activo', 'SI').limit(10)
+      .neq('activo', 'NO')
+      .limit(10)
     setSugerencias((data ?? []) as Material[])
   }, [])
 

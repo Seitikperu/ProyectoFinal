@@ -95,7 +95,7 @@ export default function ModalIngreso({ onClose, onSaved }: Props) {
     const { data } = await sb.from('materiales')
       .select('id,codigo,descripcion,unidad_medida,familia,marca_equipo,ubicacion_jabali')
       .or(`codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
-      .eq('activo', 'SI')
+      .neq('activo', 'NO')
       .limit(10)
     setSugerencias((data ?? []) as Material[])
   }, [])
