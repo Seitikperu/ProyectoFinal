@@ -93,11 +93,12 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
   const buscarMaterial = useCallback(async (q: string) => {
     if (q.length < 2) { setSugerencias([]); return }
     const { data } = await sb.from('materiales')
-      .select('id,codigo,descripcion,unidad_medida,familia,marca_equipo')
+      .select('id,codigo,descripcion,unidad_medida,familia,marca_equipo,ubicacion_jabali,activo')
       .or(`codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
-      .neq('activo', 'NO')
-      .limit(10)
-    setSugerencias((data ?? []) as Material[])
+      .limit(30)
+      
+    const validos = (data ?? []).filter((m: any) => m.activo !== 'NO').slice(0, 10)
+    setSugerencias(validos as Material[])
   }, [])
 
   useEffect(() => {
