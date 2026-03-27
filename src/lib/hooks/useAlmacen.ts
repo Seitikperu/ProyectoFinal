@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
+import { showToast } from '@/lib/toast'
 import type { IngresoAlmacen, SalidaAlmacen, Material, CentroCosto, AlmacenFilter, PaginationResult } from '@/types/database'
 
 const sb = getSupabaseClient()
@@ -98,7 +99,11 @@ export function useSalidas(filter: AlmacenFilter = {}, page = 1, pageSize = 25) 
     if (filter.fecha_desde) q = q.gte('fecha', filter.fecha_desde)
     if (filter.fecha_hasta) q = q.lte('fecha', filter.fecha_hasta)
 
-    const { data, count } = await q
+    const { data, count, error } = await q
+    if (error) {
+      console.error('Error fetching salidas:', error)
+      showToast && showToast('error', 'Error listando salidas', error.message)
+    }
     setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
     setLoading(false)
   }, [filter, page, pageSize])
