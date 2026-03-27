@@ -100,7 +100,6 @@ export function useSalidas(filter: AlmacenFilter = {}, page = 1, pageSize = 25) 
 
     const { data, count, error } = await q
     if (error) {
-      console.error('Error fetching salidas:', error)
       console.error('Error listando salidas:', error.message)
     }
     setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
@@ -124,7 +123,7 @@ export function useMateriales(busqueda = '', page = 1, pageSize = 20) {
   const [result, setResult] = useState<PaginationResult<Material>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => h{
+  useEffect(() => {
     async function fetchData() {
       setLoading(true)
       let q = sb.from('materiales').select('*', { count: 'exact' })
