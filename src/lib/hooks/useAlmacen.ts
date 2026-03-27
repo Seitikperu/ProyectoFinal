@@ -88,25 +88,32 @@ export function useSalidas(filter: AlmacenFilter = {}, page = 1, pageSize = 25) 
   const [result, setResult] = useState<PaginationResult<SalidaAlmacen>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true)
-      let q = sb.from('salida_almacen').select('*', { count: 'exact' })
-        .order('fecha', { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1)
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    let q = sb.from('salida_almacen').select('*', { count: 'exact' })
+      .order('fecha', { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1)
 
-      if (filter.busqueda)    q = q.or(`descripcion.ilike.%${filter.busqueda}%,codigo.ilike.%${filter.busqueda}%`)
-      if (filter.fecha_desde) q = q.gte('fecha', filter.fecha_desde)
-      if (filter.fecha_hasta) q = q.lte('fecha', filter.fecha_hasta)
+    if (filter.busqueda)    q = q.or(`descripcion.ilike.%${filter.busqueda}%,codigo.ilike.%${filter.busqueda}%`)
+    if (filter.fecha_desde) q = q.gte('fecha', filter.fecha_desde)
+    if (filter.fecha_hasta) q = q.lte('fecha', filter.fecha_hasta)
 
-      const { data, count } = await q
-      setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
-      setLoading(false)
-    }
-    fetchData()
+    const { data, count } = await q
+    setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
+    setLoading(false)
   }, [filter, page, pageSize])
 
-  return { ...result, loading }
+  useEffect(() => {
+    fetchData()
+
+    const channel = sb.channel('salidas-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'salida_almacen' }, fetchData)
+      .subscribe()
+
+    return () => { sb.removeChannel(channel) }
+  }, [fetchData])
+
+  return { ...result, loading, refetch: fetchData }
 }
 
 export function useMateriales(busqueda = '', page = 1, pageSize = 20) {

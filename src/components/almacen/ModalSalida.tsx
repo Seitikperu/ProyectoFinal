@@ -166,8 +166,9 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
       const { error: err } = await sb.from('salida_almacen').insert(rows)
       if (err) throw err
       onSaved()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al guardar')
+    } catch (e: any) {
+      const msg = e?.message || e?.details || 'Error al guardar'
+      setError(msg)
     } finally {
       setGuardando(false)
     }
