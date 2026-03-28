@@ -20,7 +20,6 @@ const NAV = [
     { label: 'Salidas',    href: '/dashboard/almacen/salidas' },
     { label: 'Stock ⦿',    href: '/dashboard/almacen/stock' },
     { label: 'Inventario', href: '/dashboard/almacen/inventario' },
-    { label: 'Materiales', href: '/dashboard/almacen/materiales' },
   ]},
   { group: 'Producción', items: [
     { label: 'Control Diario', href: '/dashboard/produccion' },
@@ -33,6 +32,7 @@ const NAV = [
     { label: 'CeCos',       href: '/dashboard/maestros/cecos' },
     { label: 'Personal',    href: '/dashboard/maestros/personal' },
     { label: 'Equipos',     href: '/dashboard/maestros/equipos' },
+    { label: 'Materiales', href: '/dashboard/almacen/materiales' },
     { label: 'Labores',     href: '/dashboard/maestros/labores' },
   ]},
 ]
