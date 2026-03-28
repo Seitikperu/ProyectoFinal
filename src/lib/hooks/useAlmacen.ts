@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
-import type { IngresoAlmacen, SalidaAlmacen, Material, CentroCosto, AlmacenFilter, PaginationResult } from '@/types/database'
+import type { IngresoAlmacen, SalidaAlmacen, Material, CentroCosto, AlmacenFilter, PaginationResult, Proveedor } from '@/types/database'
 
 const sb = getSupabaseClient()
 
@@ -14,7 +14,7 @@ export function useKPIAlmacen() {
       const { data: rows } = await sb.from('ingreso_almacen').select('total, codigo, proveedor')
       if (!rows) { setLoading(false); return }
       const codigos = new Set(rows.map(r => r.codigo).filter(Boolean))
-      const provs   = new Set(rows.map(r => r.proveedor).filter(Boolean))
+      const provs = new Set(rows.map(r => r.proveedor).filter(Boolean))
       setData({
         total: rows.length,
         valor: rows.reduce((a, r) => a + (r.total ?? 0), 0),
@@ -64,12 +64,10 @@ export function useIngresos(filter: AlmacenFilter = {}, page = 1, pageSize = 25)
       let q = sb.from('ingreso_almacen').select('*', { count: 'exact' })
         .order('fecha', { ascending: false })
         .range((page - 1) * pageSize, page * pageSize - 1)
-
-      if (filter.busqueda)    q = q.or(`descripcion.ilike.%${filter.busqueda}%,codigo.ilike.%${filter.busqueda}%,proveedor.ilike.%${filter.busqueda}%`)
-      if (filter.familia)     q = q.eq('familia', filter.familia)
+      if (filter.busqueda) q = q.or(`descripcion.ilike.%${filter.busqueda}%,codigo.ilike.%${filter.busqueda}%,proveedor.ilike.%${filter.busqueda}%`)
+      if (filter.familia) q = q.eq('familia', filter.familia)
       if (filter.fecha_desde) q = q.gte('fecha', filter.fecha_desde)
       if (filter.fecha_hasta) q = q.lte('fecha', filter.fecha_hasta)
-
       const { data, count, error: err } = await q
       if (err) throw err
       setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
@@ -93,26 +91,20 @@ export function useSalidas(filter: AlmacenFilter = {}, page = 1, pageSize = 25) 
     let q = sb.from('salida_almacen').select('*', { count: 'exact' })
       .order('fecha', { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1)
-
-    if (filter.busqueda)    q = q.or(`descripcion.ilike.%${filter.busqueda}%,codigo.ilike.%${filter.busqueda}%`)
+    if (filter.busqueda) q = q.or(`descripcion.ilike.%${filter.busqueda}%,codigo.ilike.%${filter.busqueda}%`)
     if (filter.fecha_desde) q = q.gte('fecha', filter.fecha_desde)
     if (filter.fecha_hasta) q = q.lte('fecha', filter.fecha_hasta)
-
     const { data, count, error } = await q
-    if (error) {
-      console.error('Error listando salidas:', error.message)
-    }
+    if (error) { console.error('Error listando salidas:', error.message) }
     setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
     setLoading(false)
   }, [filter, page, pageSize])
 
   useEffect(() => {
     fetchData()
-
     const channel = sb.channel('salidas-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'salida_almacen' }, fetchData)
       .subscribe()
-
     return () => { sb.removeChannel(channel) }
   }, [fetchData])
 
@@ -130,6 +122,27 @@ export function useMateriales(busqueda = '', page = 1, pageSize = 20) {
         .order('codigo').range((page - 1) * pageSize, page * pageSize - 1)
       if (busqueda) q = q.or(`descripcion.ilike.%${busqueda}%,codigo.ilike.%${busqueda}%`)
       const { data, count } = await q
+      setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
+      setLoading(false)
+    }
+    fetchData()
+  }, [busqueda, page, pageSize])
+
+  return { ...result, loading }
+}
+
+export function useProveedores(busqueda = '', page = 1, pageSize = 50) {
+  const [result, setResult] = useState<PaginationResult<Proveedor>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true)
+      let q = sb.from('proveedores').select('*', { count: 'exact' })
+        .order('proveedor').range((page - 1) * pageSize, page * pageSize - 1)
+      if (busqueda) q = q.or(`proveedor.ilike.%${busqueda}%,ruc_di.ilike.%${busqueda}%,ciudad.ilike.%${busqueda}%`)
+      const { data, count, error } = await q
+      if (error) { console.error('Error listando proveedores:', error.message) }
       setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
       setLoading(false)
     }
@@ -157,9 +170,9 @@ export function useCentrosCosto(soloAlmacen = false) {
   return { data, loading }
 }
 
-// ── STOCK EN TIEMPO REAL ──────────────────────────────────────────────────────
+// ── STOCK EN TIEMPO REAL ──────────────────────────────────────────────────────────────────────────────
 // Calcula stock disponible por material: total_ingresado - total_salido
-// Se actualiza automáticamente cuando hay INSERT/UPDATE/DELETE en las tablas
+// Se actualiza automaticamente cuando hay INSERT/UPDATE/DELETE en las tablas
 // ingreso_almacen, salida_almacen o inventario (via Supabase Realtime WebSocket)
 
 export interface StockItem {
@@ -181,14 +194,12 @@ export function useStockRealtime(almacen?: string) {
 
   const calcularStock = useCallback(async () => {
     try {
-      // Consulta ingresos agrupados por código
       let qI = sb.from('ingreso_almacen')
         .select('codigo,descripcion:descripcion,unidad,familia,cantidad,fecha')
         .not('codigo', 'is', null)
       if (almacen) qI = qI.eq('almacen', almacen)
       const { data: ingresos } = await qI
 
-      // Consulta salidas agrupadas por código
       let qS = sb.from('salida_almacen')
         .select('codigo,cantidad,fecha')
         .not('codigo', 'is', null)
@@ -197,7 +208,6 @@ export function useStockRealtime(almacen?: string) {
 
       if (!ingresos) { setLoading(false); return }
 
-      // Sumar ingresos por código
       const mapI: Record<string, { descripcion: string; unidad: string; familia: string; total: number; ultima_fecha: string | null }> = {}
       for (const r of ingresos) {
         const k = r.codigo as string
@@ -206,7 +216,6 @@ export function useStockRealtime(almacen?: string) {
         if (!mapI[k].ultima_fecha || (r.fecha && r.fecha > mapI[k].ultima_fecha!)) mapI[k].ultima_fecha = r.fecha
       }
 
-      // Sumar salidas por código
       const mapS: Record<string, { total: number; ultima_fecha: string | null }> = {}
       for (const r of (salidas ?? [])) {
         const k = r.codigo as string
@@ -215,7 +224,6 @@ export function useStockRealtime(almacen?: string) {
         if (!mapS[k].ultima_fecha || (r.fecha && r.fecha > mapS[k].ultima_fecha!)) mapS[k].ultima_fecha = r.fecha
       }
 
-      // Construir resultado final
       const resultado: StockItem[] = Object.entries(mapI).map(([codigo, ing]) => ({
         codigo,
         descripcion: ing.descripcion,
@@ -237,15 +245,12 @@ export function useStockRealtime(almacen?: string) {
 
   useEffect(() => {
     calcularStock()
-
-    // Suscripción en tiempo real — se dispara ante cualquier cambio en las 3 tablas
     const channel = sb
       .channel('stock-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ingreso_almacen' }, calcularStock)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'salida_almacen' }, calcularStock)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'inventario' }, calcularStock)
       .subscribe()
-
     return () => { sb.removeChannel(channel) }
   }, [calcularStock])
 
