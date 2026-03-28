@@ -9,7 +9,7 @@ const sb = getSupabaseClient()
 const ESTILO: Record<string, { icono: string; color: string; colorBg: string }> = {
   'Mina Jabalí':     { icono: '⛏️', color: 'text-blue-400',   colorBg: 'bg-blue-500/10 border-blue-500/30' },
   'Mina Bellavista': { icono: '🏔️', color: 'text-emerald-400',colorBg: 'bg-emerald-500/10 border-emerald-500/30' },
-  'Managua':         { icono: '🏢', color: 'text-violet-400', colorBg: 'bg-violet-500/10 border-violet-500/30' },
+  'Managua':         { icono: '🏢', color: 'text-violet-400', colorBg: 'bg-viohlet-500/10 border-violet-500/30' },
   _default:          { icono: '📁', color: 'text-slate-400',  colorBg: 'bg-slate-500/10 border-slate-500/30' },
 }
 
@@ -100,7 +100,7 @@ export default function SelectProjectPage() {
       descripcion: p.descripcion,
       ...estilo(p.nombre),
     }))
-    setTimeout(() => router.push('/dashboard'), 350)
+    setTimeout(() => router.push('/select-module'), 350)
   }
 
   function cerrarSesion() {
