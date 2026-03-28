@@ -100,7 +100,7 @@ export function PermisosProvider({ children }: { children: ReactNode }) {
   return (
         <Ctx.Provider value={{ usuario, permisos, cargando, puedeVer, puedeCrear, cargarPermisos, setUsuario }}>
           {children}
-        </Ctx.Provider>Ctx.Provider>
+        </Ctx.Provider>
                     )
 }
 
