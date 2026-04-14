@@ -14,14 +14,14 @@ interface CisUser {
 }
 
 const NAV = [
-  { group: 'Almacén', items: [
+  { group: 'AlmacÃ©n', items: [
     { label: 'Dashboard',  href: '/dashboard' },
     { label: 'Ingresos',   href: '/dashboard/almacen/ingresos' },
     { label: 'Salidas',    href: '/dashboard/almacen/salidas' },
-    { label: 'Stock ⦿',    href: '/dashboard/almacen/stock' },
+    { label: 'Stock â¦¿',    href: '/dashboard/almacen/stock' },
     { label: 'Inventario', href: '/dashboard/almacen/inventario' },
   ]},
-  { group: 'Producción', items: [
+  { group: 'ProducciÃ³n', items: [
     { label: 'Control Diario', href: '/dashboard/produccion' },
     { label: 'Plan Mensual',   href: '/dashboard/produccion/plan-mes' },
     { label: 'Explosivos',     href: '/dashboard/produccion/explosivos' },
@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Leer proyecto seleccionado
       const rawP = sessionStorage.getItem('cis_proyecto')
       if (rawP) setProyecto(JSON.parse(rawP) as Proyecto)
-      else router.replace('/select-project')  // sin proyecto → volver a seleccionar
+      else router.replace('/select-project')  // sin proyecto â volver a seleccionar
     } catch {
       router.replace('/login')
     } finally {
@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login')
   }
 
-  // ── Pantalla de carga mientras verifica sesión ──────────────────────────
+  // ââ Pantalla de carga mientras verifica sesiÃ³n ââââââââââââââââââââââââââ
   if (!checked) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <div className="flex items-center gap-3 text-slate-400">
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
         </svg>
-        <span className="text-sm">Verificando sesión…</span>
+        <span className="text-sm">Verificando sesiÃ³nâ¦</span>
       </div>
     </div>
   )
@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div>
             <p className="text-white font-semibold text-sm leading-tight">CIS Nicaragua</p>
-            <p className="text-slate-500 text-xs">Unidad Minera Jabalí</p>
+            <p className="text-slate-500 text-xs">Unidad Minera JabalÃ­</p>
           </div>
         </div>
         {/* Badge de proyecto activo */}
@@ -120,7 +120,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-        {NAV.map(({ group, items }) => (
+        {NAV.filter(({ group }) => {
+          if (pathname.startsWith('/dashboard/almacen')) return group === 'Almacén'
+          if (pathname.startsWith('/dashboard/produccion')) return group === 'Producción'
+          if (pathname.startsWith('/dashboard/maestros')) return group === 'Maestros'
+          return true
+        }).map(({ group, items }) => (
           <div key={group}>
             <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider px-2 mb-1.5">{group}</p>
             <ul className="space-y-0.5">
@@ -154,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <p className="text-white text-xs font-medium truncate">{user?.nombre ?? 'Usuario'}</p>
             {user?.acceso && <p className="text-slate-500 text-xs truncate">{user.acceso}</p>}
           </div>
-          <button onClick={logout} className="text-slate-500 hover:text-red-400 transition-colors p-1" title="Cerrar sesión">
+          <button onClick={logout} className="text-slate-500 hover:text-red-400 transition-colors p-1" title="Cerrar sesiÃ³n">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
@@ -192,7 +197,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
-      {/* Toast global — siempre presente */}
+      {/* Toast global â siempre presente */}
       <ToastContainer />
     </div>
   )
