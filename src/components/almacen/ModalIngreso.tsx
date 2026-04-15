@@ -79,7 +79,7 @@ export default function ModalIngreso({ onClose, onSaved }: Props) {
     sb.from('proveedores').select('proveedor').eq('activo', true).order('proveedor').limit(500)
       .then(({ data }) => setProveedores((data ?? []) as Proveedor[]))
 
-    sb.from('personal').select('trabajador').eq('activo', 'SI').eq('acceso_almacen', 'SI').order('trabajador').limit(500)
+    sb.from('personal').select('trabajador').eq('activo', 'SI').eq('Acceso_Almacen', 'SI').order('trabajador').limit(500)
       .then(({ data }) => setPersonal(data ?? []))
 
     sb.from('cat_origen').select('valor').order('valor').limit(100)
