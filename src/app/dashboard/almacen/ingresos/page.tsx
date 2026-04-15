@@ -99,7 +99,7 @@ export default function IngresosPage() {
                       >
                       <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-                      </svg>svg>
+                      </svg>
                       Retroceder
               </button>
         
@@ -128,7 +128,7 @@ export default function IngresosPage() {
                                   className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-600/20">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-                                </svg>svg>
+                                </svg>
                                 + Nuevo Ingreso
                       </button>
               </div>div>
