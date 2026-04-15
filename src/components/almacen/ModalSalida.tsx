@@ -19,6 +19,8 @@ interface ItemSalida {
   centro_costo: string
   uso_especifico: string
   observacion: string
+  pu_usd: number
+  total: number
 }
 
 interface Cabecera {
@@ -56,7 +58,8 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
   const [centroCosto, setCentroCosto] = useState('')
   const [usoEspecifico, setUsoEspecifico] = useState('')
   const [observacion, setObservacion] = useState('')
-
+  const [puUsd, setPuUsd] = useState(0)
+  
   // lista acumulada
   const [items, setItems] = useState<ItemSalida[]>([])
   const keyRef = useRef(0)
@@ -106,11 +109,18 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
     return () => clearTimeout(t)
   }, [busqCod, buscarMaterial])
 
-  const seleccionarMaterial = (m: Material) => {
+  const seleccionarMaterial = async (m: Material) => {
     setMatSel(m); setBusqCod(m.codigo); setSugerencias([])
+    setPuUsd(0)
+    // Fetch Precio Promedio Ponderado
+    const { data } = await sb.rpc('get_pu_usd', { p_codigo: m.codigo })
+    if (data) {
+      setPuUsd(Number(data))
+    }
   }
 
   // ── agregar ítem ─────────────────────────────────────────────────────────
+  const totalItem = parseFloat(cantidad || '0') * puUsd
   const puedeAgregar = matSel && parseFloat(cantidad) > 0
 
   const agregarItem = () => {
@@ -128,9 +138,11 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
       centro_costo: centroCosto,
       uso_especifico: usoEspecifico,
       observacion,
+      pu_usd: puUsd,
+      total: totalItem,
     }])
     setBusqCod(''); setMatSel(null); setCantidad(''); setNroVale('')
-    setNroOt(''); setObservacion('')
+    setNroOt(''); setObservacion(''); setPuUsd(0)
   }
 
   const eliminarItem = (key: number) => setItems(prev => prev.filter(i => i._key !== key))
@@ -157,6 +169,8 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
         centro_costo: it.centro_costo || null,
         uso_especifico: it.uso_especifico || null,
         observacion: it.observacion || null,
+        pu_usd: it.pu_usd || null,
+        total: it.total || null,
         solicitante: cab.solicitante,
         autorizado_por: cab.autorizado_por || null,
         despachador: cab.despachador || null,
@@ -292,6 +306,16 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                   className="w-full bg-slate-900 border border-slate-700 text-white placeholder-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
               </div>
               <div>
+                <label className="text-xs text-slate-400 mb-1 block">P.U. USD (PPP)</label>
+                <input readOnly value={puUsd > 0 ? puUsd.toFixed(4) : ''}
+                  className="w-full bg-slate-900/50 border border-slate-700 text-orange-400 font-medium rounded-lg px-3 py-2 text-sm cursor-not-allowed" placeholder="Calculado"/>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Total USD</label>
+                <input readOnly value={totalItem > 0 ? totalItem.toFixed(2) : ''}
+                  className="w-full bg-slate-900/50 border border-slate-700 text-orange-400 font-medium rounded-lg px-3 py-2 text-sm cursor-not-allowed" placeholder="Automático"/>
+              </div>
+              <div>
                 <label className="text-xs text-slate-400 mb-1 block">N° Vale</label>
                 <input type="text" value={nroVale} onChange={e => setNroVale(e.target.value)}
                   placeholder="Ej: V-001"
@@ -353,7 +377,7 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-slate-800 border-b border-slate-700">
-                      {['Código','Descripción','UM','Cantidad','N° Vale','N° OT','C. Costo',''].map(h => (
+                      {['Código','Descripción','UM','Cantidad','P.U USD','Total USD','N° Vale','N° OT','C. Costo',''].map(h => (
                         <th key={h} className="text-left text-slate-400 font-semibold uppercase px-3 py-2 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
@@ -365,6 +389,8 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                         <td className="px-3 py-2 text-white max-w-xs"><p className="truncate">{it.descripcion}</p></td>
                         <td className="px-3 py-2 text-slate-500">{it.unidad}</td>
                         <td className="px-3 py-2 text-right text-slate-300 font-mono">{it.cantidad.toLocaleString('es-NI')}</td>
+                        <td className="px-3 py-2 text-right text-slate-400 font-mono">{it.pu_usd > 0 ? it.pu_usd.toFixed(4) : '—'}</td>
+                        <td className="px-3 py-2 text-right text-orange-400 font-medium font-mono">{it.total > 0 ? '$' + it.total.toFixed(2) : '—'}</td>
                         <td className="px-3 py-2 text-slate-400">{it.numero_vale || '—'}</td>
                         <td className="px-3 py-2 text-slate-400">{it.numero_ot || '—'}</td>
                         <td className="px-3 py-2 text-slate-400 max-w-24"><p className="truncate">{it.centro_costo || '—'}</p></td>
@@ -382,7 +408,11 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                       <td className="px-3 py-2 text-orange-400 font-bold text-right">
                         {items.reduce((s, i) => s + i.cantidad, 0).toLocaleString('es-NI')} uds.
                       </td>
-                      <td colSpan={4}/>
+                      <td className="px-3 py-2 text-slate-400 font-semibold text-right">Total general:</td>
+                      <td className="px-3 py-2 text-orange-400 font-bold text-right">
+                        ${items.reduce((s, i) => s + i.total, 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      </td>
+                      <td colSpan={3}/>
                     </tr>
                   </tfoot>
                 </table>
