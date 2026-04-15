@@ -4,6 +4,7 @@ import { getSupabaseClient } from '@/lib/supabase/client'
 import ModalIngreso from '@/components/almacen/ModalIngreso'
 import { showToast } from '@/components/ui/Toast'
 import type { IngresoAlmacen } from '@/types/database'
+import { BackButton } from '@/components/ui/BackButton'
 
 const sb = getSupabaseClient()
 
@@ -97,7 +98,10 @@ export default function IngresosPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+            <BackButton />
             <h1 className="text-xl font-bold text-white">Ingresos al Almacén</h1>
+          </div>
             {/* Indicador Realtime */}
             <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border transition-all ${
               realtime

@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react'
 import { useMateriales } from '@/lib/hooks/useAlmacen'
 import type { Material } from '@/types/database'
+import { BackButton } from '@/components/ui/BackButton'
 
 const PAGE_SIZE = 50
 
@@ -48,7 +49,10 @@ export default function Page() {
     <div className="p-6 max-w-screen-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-white">Catalogo de Materiales</h1>
+          <div className="flex items-center gap-4">
+            <BackButton />
+            <h1 className="text-xl font-bold text-white">Catalogo de Materiales</h1>
+          </div>
           <p className="text-slate-400 text-sm mt-1">
             {loading ? 'Cargando...' : count.toLocaleString() + ' materiales registrados'}
           </p>

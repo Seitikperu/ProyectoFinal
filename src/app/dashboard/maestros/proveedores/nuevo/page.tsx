@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import { showToast } from '@/components/ui/Toast'
+import { BackButton } from '@/components/ui/BackButton'
 
 export default function NuevoProveedorPage() {
   const router = useRouter()
@@ -70,15 +71,7 @@ export default function NuevoProveedorPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
-        <button 
-          onClick={() => router.back()}
-          className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-          title="Volver"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
+        <BackButton />
         <h1 className="text-2xl font-bold text-white">Nuevo Proveedor</h1>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, KeyboardEvent } from 'react'
 import { useProveedores } from '@/lib/hooks/useAlmacen'
 import type { Proveedor } from '@/types/database'
+import { BackButton } from '@/components/ui/BackButton'
 
 function getBadgeClass(color: string) {
   const map: Record<string, string> = {
@@ -60,7 +61,10 @@ export default function Page() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-xl font-bold text-white">Proveedores</h1>
+          <div className="flex items-center gap-4">
+            <BackButton />
+            <h1 className="text-xl font-bold text-white">Proveedores</h1>
+          </div>
           <p className="text-slate-400 text-sm mt-0.5">
             {loading ? 'Cargando...' : `${count.toLocaleString()} registros`}
           </p>

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useStockRealtime } from '@/lib/hooks/useAlmacen'
+import { BackButton } from '@/components/ui/BackButton'
 
 const fmtNum = (n: number) => n.toLocaleString('es-NI', { minimumFractionDigits: 0 })
 const fmtFecha = (s: string | null) => s ? new Date(s + 'T00:00:00').toLocaleDateString('es-NI', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
@@ -32,13 +33,16 @@ export default function StockPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <BackButton />
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
             Reporte de Stock
             <span className="inline-flex items-center gap-1.5 text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400"/>
               Tiempo real
             </span>
           </h1>
+          </div>
           <p className="text-slate-500 text-xs mt-1">
             {lastUpdate
               ? `Última actualización: ${lastUpdate.toLocaleTimeString('es-NI')} — ${loading ? 'actualizando…' : stockFiltrado.length + ' materiales'}`

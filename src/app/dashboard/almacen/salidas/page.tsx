@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useSalidas } from '@/lib/hooks/useAlmacen'
 import ModalSalida from '@/components/almacen/ModalSalida'
 import type { AlmacenFilter } from '@/types/database'
+import { BackButton } from '@/components/ui/BackButton'
 
 const fmtFecha = (s: string | null) => s ? new Date(s + 'T00:00:00').toLocaleDateString('es-NI', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
@@ -19,7 +20,10 @@ export default function SalidasPage() {
     <div className="p-6 space-y-4 max-w-screen-2xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Salidas del Almacén</h1>
+          <div className="flex items-center gap-4">
+            <BackButton />
+            <h1 className="text-xl font-bold text-white">Salidas del Almacén</h1>
+          </div>
           <p className="text-slate-400 text-sm mt-0.5">{loading ? 'Cargando...' : count.toLocaleString('es-NI') + ' registros'}</p>
         </div>
         <button
