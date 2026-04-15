@@ -101,9 +101,9 @@ export default function IngresosPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
                       </svg>svg>
                       Retroceder
-              </button>button>
+              </button>
         
-          {/* ── Cabecera ── */}
+          {/* ── Cabecera ── */
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                                 <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function IngresosPage() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
                                 </svg>svg>
                                 + Nuevo Ingreso
-                      </button>button>
+                      </button>
               </div>div>
         
           {/* ── Filtros ── */}
@@ -159,7 +159,7 @@ export default function IngresosPage() {
                                   onClick={() => { setBusqueda(''); setFechaDesde(''); setFechaHasta(''); setPage(1) }}
                                   className="mt-2 text-xs text-slate-500 hover:text-slate-300 underline underline-offset-2">
                                 Limpiar filtros
-                    </button>button>
+                    </button>
                       )}
               </div>div>
         
