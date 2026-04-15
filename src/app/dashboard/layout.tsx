@@ -98,20 +98,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <p className="text-slate-500 text-xs">Unidad Minera JabalÃÂÃÂÃÂÃÂ­</p>
           </div>
         </div>
-        {/* Badge de proyecto activo */}
+        {/* Badge de proyecto activo y selector de modulo */}
         {proyecto && (
-          <div className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 border ${proyecto.colorBg}`}>
-            <div className="flex items-center gap-2">
-              <span className="text-base">{proyecto.icono}</span>
-              <div>
-                <p className={`text-xs font-semibold leading-tight ${proyecto.color}`}>{proyecto.nombre}</p>
-                <p className="text-slate-500 text-xs">{proyecto.id}</p>
+          <div className="flex flex-col gap-2">
+            <div className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 border ${proyecto.colorBg}`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base">{proyecto.icono}</span>
+                <div>
+                  <p className={`text-xs font-semibold leading-tight ${proyecto.color}`}>{proyecto.nombre}</p>
+                  <p className="text-slate-500 text-xs">{proyecto.id}</p>
+                </div>
               </div>
+              <Link href="/select-project" className="text-slate-500 hover:text-white transition-colors" title="Cambiar proyecto">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+              </Link>
             </div>
-            <Link href="/select-project" className="text-slate-500 hover:text-white transition-colors" title="Cambiar proyecto">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            <Link 
+              href="/select-module" 
+              className="flex items-center justify-center gap-2 w-full py-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 hover:border-slate-600 text-xs font-medium text-slate-400 hover:text-white transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
               </svg>
+              Volver a Módulos
             </Link>
           </div>
         )}
