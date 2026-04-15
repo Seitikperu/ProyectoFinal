@@ -59,6 +59,7 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
   const [usoEspecifico, setUsoEspecifico] = useState('')
   const [observacion, setObservacion] = useState('')
   const [puUsd, setPuUsd] = useState(0)
+  const [stockDisp, setStockDisp] = useState(0)
   
   // lista acumulada
   const [items, setItems] = useState<ItemSalida[]>([])
@@ -112,16 +113,18 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
   const seleccionarMaterial = async (m: Material) => {
     setMatSel(m); setBusqCod(m.codigo); setSugerencias([])
     setPuUsd(0)
-    // Fetch Precio Promedio Ponderado
-    const { data } = await sb.rpc('get_pu_usd', { p_codigo: m.codigo })
+    setStockDisp(0)
+    // Fetch Precio Promedio Ponderado and Stock
+    const { data } = await sb.rpc('get_stock_and_pu', { p_codigo: m.codigo })
     if (data) {
-      setPuUsd(Number(data))
+      setPuUsd(Number((data as any).pu_usd || 0))
+      setStockDisp(Number((data as any).stock || 0))
     }
   }
 
   // ── agregar ítem ─────────────────────────────────────────────────────────
   const totalItem = parseFloat(cantidad || '0') * puUsd
-  const puedeAgregar = matSel && parseFloat(cantidad) > 0
+  const puedeAgregar = Boolean(matSel && parseFloat(cantidad) > 0 && parseFloat(cantidad) <= stockDisp)
 
   const agregarItem = () => {
     if (!matSel || !puedeAgregar) return
@@ -142,7 +145,7 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
       total: totalItem,
     }])
     setBusqCod(''); setMatSel(null); setCantidad(''); setNroVale('')
-    setNroOt(''); setObservacion(''); setPuUsd(0)
+    setNroOt(''); setObservacion(''); setPuUsd(0); setStockDisp(0)
   }
 
   const eliminarItem = (key: number) => setItems(prev => prev.filter(i => i._key !== key))
@@ -300,10 +303,15 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                   className="w-full bg-slate-900/50 border border-slate-700 text-slate-400 rounded-lg px-3 py-2 text-sm" placeholder="Auto"/>
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Cantidad <span className="text-red-400">*</span></label>
-                <input type="number" min="0" step="any" value={cantidad} onChange={e => setCantidad(e.target.value)}
+                <label className="text-xs text-slate-400 mb-1 flex items-center justify-between">
+                  <span>Cantidad <span className="text-red-400">*</span></span>
+                  {matSel && <span className="text-orange-400 font-mono text-[10px]">Stock: {stockDisp.toLocaleString('es-NI')}</span>}
+                </label>
+                <input type="number" min="0" max={stockDisp > 0 ? stockDisp : undefined} step="any" value={cantidad} onChange={e => setCantidad(e.target.value)}
                   placeholder="0"
-                  className="w-full bg-slate-900 border border-slate-700 text-white placeholder-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                  className={`w-full bg-slate-900 border ${cantidad && parseFloat(cantidad) > stockDisp ? 'border-red-500 focus:ring-red-500' : 'border-slate-700 focus:ring-orange-500'} text-white placeholder-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2`}
+                />
+                {cantidad && parseFloat(cantidad) > stockDisp && <p className="text-red-500 text-[10px] mt-1 break-words">Supera stock disponible</p>}
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">P.U. USD (PPP)</label>
