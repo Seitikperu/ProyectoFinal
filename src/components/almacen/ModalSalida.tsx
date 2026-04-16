@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import type { Material, CentroCosto } from '@/types/database'
 
 const sb = getSupabaseClient()
@@ -245,27 +246,33 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Solicitante <span className="text-red-400">*</span></label>
-                <select value={cab.solicitante} onChange={e => setCab(c => ({ ...c, solicitante: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option value="">-- Seleccionar --</option>
-                  {solicitantes.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
-                </select>
+                <SearchableSelect
+                  value={cab.solicitante}
+                  onChange={val => setCab(c => ({ ...c, solicitante: val }))}
+                  options={solicitantes.map(p => ({ value: p.trabajador, label: p.trabajador }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-800 focus:!ring-orange-500"
+                />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Autorizado por</label>
-                <select value={cab.autorizado_por} onChange={e => setCab(c => ({ ...c, autorizado_por: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option value="">-- Seleccionar --</option>
-                  {aprobadores.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
-                </select>
+                <SearchableSelect
+                  value={cab.autorizado_por}
+                  onChange={val => setCab(c => ({ ...c, autorizado_por: val }))}
+                  options={aprobadores.map(p => ({ value: p.trabajador, label: p.trabajador }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-800 focus:!ring-orange-500"
+                />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Despachador</label>
-                <select value={cab.despachador} onChange={e => setCab(c => ({ ...c, despachador: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option value="">-- Seleccionar --</option>
-                  {despachadores.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
-                </select>
+                <SearchableSelect
+                  value={cab.despachador}
+                  onChange={val => setCab(c => ({ ...c, despachador: val }))}
+                  options={despachadores.map(p => ({ value: p.trabajador, label: p.trabajador }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-800 focus:!ring-orange-500"
+                />
               </div>
             </div>
           </section>
@@ -343,15 +350,13 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Centro de Costo</label>
-                <select value={centroCosto} onChange={e => setCentroCosto(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option value="">-- Seleccionar --</option>
-                  {centros.map(c => (
-                    <option key={c.id} value={c.centro_costo ?? ''}>
-                      {c.cod_ceco} — {c.centro_costo}
-                    </option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  value={centroCosto}
+                  onChange={val => setCentroCosto(val)}
+                  options={centros.map(c => ({ value: c.centro_costo ?? '', label: `${c.cod_ceco} — ${c.centro_costo}` }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-900 focus:!ring-orange-500"
+                />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Uso específico</label>

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import { showToast } from '@/components/ui/Toast'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import type { Material, Proveedor } from '@/types/database'
 
 const sb = getSupabaseClient()
@@ -263,27 +264,33 @@ export default function ModalIngreso({ onClose, onSaved }: Props) {
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Proveedor <span className="text-red-400">*</span></label>
-                <select value={cab.proveedor} onChange={e => setCab(c => ({ ...c, proveedor: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">-- Seleccionar --</option>
-                  {proveedores.map(p => <option key={p.id} value={p.proveedor}>{p.proveedor}</option>)}
-                </select>
+                <SearchableSelect
+                  value={cab.proveedor}
+                  onChange={val => setCab(c => ({ ...c, proveedor: val }))}
+                  options={proveedores.map(p => ({ value: p.proveedor, label: p.proveedor }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-800"
+                />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Recibido por <span className="text-red-400">*</span></label>
-                <select value={cab.recibido_por} onChange={e => setCab(c => ({ ...c, recibido_por: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">-- Seleccionar --</option>
-                  {personal.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
-                </select>
+                <SearchableSelect
+                  value={cab.recibido_por}
+                  onChange={val => setCab(c => ({ ...c, recibido_por: val }))}
+                  options={personal.map(p => ({ value: p.trabajador, label: p.trabajador }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-800"
+                />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Procesado por</label>
-                <select value={cab.procesado_por} onChange={e => setCab(c => ({ ...c, procesado_por: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">-- Seleccionar --</option>
-                  {personal.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
-                </select>
+                <SearchableSelect
+                  value={cab.procesado_por}
+                  onChange={val => setCab(c => ({ ...c, procesado_por: val }))}
+                  options={personal.map(p => ({ value: p.trabajador, label: p.trabajador }))}
+                  placeholder="-- Seleccionar --"
+                  className="!bg-slate-800"
+                />
               </div>
             </div>
           </section>
