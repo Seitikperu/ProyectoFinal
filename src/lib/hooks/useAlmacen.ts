@@ -131,7 +131,7 @@ export function useMateriales(busqueda = '', page = 1, pageSize = 20) {
   return { ...result, loading }
 }
 
-export function useProveedores(busqueda = '', page = 1, pageSize = 50) {
+export function useProveedores(busqueda = '', page = 1, pageSize = 50, proyectoNombre?: string) {
   const [result, setResult] = useState<PaginationResult<Proveedor>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
   const [loading, setLoading] = useState(true)
 
@@ -140,6 +140,7 @@ export function useProveedores(busqueda = '', page = 1, pageSize = 50) {
       setLoading(true)
       let q = sb.from('proveedores').select('*', { count: 'exact' })
         .order('proveedor').range((page - 1) * pageSize, page * pageSize - 1)
+      if (proyectoNombre) q = q.eq('proyecto_nombre', proyectoNombre)
       if (busqueda) q = q.or(`proveedor.ilike.%${busqueda}%,ruc_di.ilike.%${busqueda}%,ciudad.ilike.%${busqueda}%`)
       const { data, count, error } = await q
       if (error) { console.error('Error listando proveedores:', error.message) }
@@ -147,9 +148,90 @@ export function useProveedores(busqueda = '', page = 1, pageSize = 50) {
       setLoading(false)
     }
     fetchData()
-  }, [busqueda, page, pageSize])
+  }, [busqueda, page, pageSize, proyectoNombre])
 
   return { ...result, loading }
+}
+
+export function usePersonal(busqueda = '', page = 1, pageSize = 50, proyectoNombre?: string) {
+  const [result, setResult] = useState<PaginationResult<any>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    let q = sb.from('personal').select('*', { count: 'exact' })
+      .order('trabajador').range((page - 1) * pageSize, page * pageSize - 1)
+    if (proyectoNombre) q = q.eq('proyecto_nombre', proyectoNombre)
+    if (busqueda) q = q.or(`trabajador.ilike.%${busqueda}%,ocupacion.ilike.%${busqueda}%`)
+    const { data, count, error } = await q
+    if (error) { console.error('Error listando personal:', error.message) }
+    setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
+    setLoading(false)
+  }, [busqueda, page, pageSize, proyectoNombre])
+
+  useEffect(() => { fetchData() }, [fetchData])
+  return { ...result, loading, refetch: fetchData }
+}
+
+export function useCentrosCostoPaginado(busqueda = '', page = 1, pageSize = 50) {
+  const [result, setResult] = useState<PaginationResult<any>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    // Cecos applies locally/globally, meaning general so no project filter here
+    let q = sb.from('centros_costo').select('*', { count: 'exact' })
+      .order('cod_ceco').range((page - 1) * pageSize, page * pageSize - 1)
+    if (busqueda) q = q.or(`centro_costo.ilike.%${busqueda}%,cod_ceco.ilike.%${busqueda}%`)
+    const { data, count, error } = await q
+    if (error) { console.error('Error listando cecos:', error.message) }
+    setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
+    setLoading(false)
+  }, [busqueda, page, pageSize])
+
+  useEffect(() => { fetchData() }, [fetchData])
+  return { ...result, loading, refetch: fetchData }
+}
+
+// Estos dos hooks referencian tablas que quizas no existan todavía, pero ya las dejamos armadas
+export function useEquipos(busqueda = '', page = 1, pageSize = 50, proyectoNombre?: string) {
+  const [result, setResult] = useState<PaginationResult<any>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    let q = sb.from('equipos').select('*', { count: 'exact' }).range((page - 1) * pageSize, page * pageSize - 1)
+    if (proyectoNombre) q = q.eq('proyecto_nombre', proyectoNombre)
+    if (busqueda) q = q.or(`descripcion.ilike.%${busqueda}%,codigo.ilike.%${busqueda}%`)
+    const { data, count, error } = await q
+    if (!error) {
+      setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
+    }
+    setLoading(false)
+  }, [busqueda, page, pageSize, proyectoNombre])
+
+  useEffect(() => { fetchData() }, [fetchData])
+  return { ...result, loading, refetch: fetchData }
+}
+
+export function useLabores(busqueda = '', page = 1, pageSize = 50, proyectoNombre?: string) {
+  const [result, setResult] = useState<PaginationResult<any>>({ data: [], count: 0, page, pageSize, totalPages: 0 })
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    let q = sb.from('labores').select('*', { count: 'exact' }).range((page - 1) * pageSize, page * pageSize - 1)
+    if (proyectoNombre) q = q.eq('proyecto_nombre', proyectoNombre)
+    if (busqueda) q = q.or(`descripcion.ilike.%${busqueda}%,codigo.ilike.%${busqueda}%`)
+    const { data, count, error } = await q
+    if (!error) {
+      setResult({ data: data ?? [], count: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) })
+    }
+    setLoading(false)
+  }, [busqueda, page, pageSize, proyectoNombre])
+
+  useEffect(() => { fetchData() }, [fetchData])
+  return { ...result, loading, refetch: fetchData }
 }
 
 export function useCentrosCosto(soloAlmacen = false) {
