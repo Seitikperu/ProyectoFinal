@@ -66,7 +66,8 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
   const keyRef = useRef(0)
 
   // catálogos
-  const [personal, setPersonal] = useState<{ trabajador: string }[]>([])
+  const [solicitantes, setSolicitantes] = useState<{ trabajador: string }[]>([])
+  const [despachadores, setDespachadores] = useState<{ trabajador: string }[]>([])
   const [aprobadores, setAprobadores] = useState<{ trabajador: string }[]>([])
   const [centros, setCentros] = useState<CentroCosto[]>([])
 
@@ -75,20 +76,19 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
 
   // ── cargar catálogos ─────────────────────────────────────────────────────
   useEffect(() => {
-    sb.from('personal').select('trabajador').eq('activo', 'SI').order('trabajador').limit(500)
-      .then(({ data }) => setPersonal(data ?? []))
+    // solicitantes: todas las personas
+    sb.from('personal').select('trabajador').order('trabajador').limit(800)
+      .then(({ data }) => setSolicitantes(data ?? []))
 
-    // aprobadores: campo aprobador01 = 'SI'
-    sb.from('personal').select('trabajador').eq('activo', 'SI').eq('aprobador01', 'SI').order('trabajador').limit(200)
-      .then(({ data }) => {
-        if (data && data.length > 0) setAprobadores(data)
-        else {
-          // fallback: misma lista de personal
-          sb.from('personal').select('trabajador').eq('activo', 'SI').order('trabajador').limit(500)
-            .then(({ data: d2 }) => setAprobadores(d2 ?? []))
-        }
-      })
+    // despachadores: Acceso_Almacen = 'SI'
+    sb.from('personal').select('trabajador').eq('Acceso_Almacen', 'SI').order('trabajador').limit(500)
+      .then(({ data }) => setDespachadores(data ?? []))
 
+    // autorizados por: autorizacion_salm = 'SI'
+    sb.from('personal').select('trabajador').eq('autorizacion_salm', 'SI').order('trabajador').limit(500)
+      .then(({ data }) => setAprobadores(data ?? []))
+
+    // centros de costo
     sb.from('centros_costo').select('id,cod_ceco,centro_costo,area').eq('filtro_almacen', 'SI').order('cod_ceco').limit(500)
       .then(({ data }) => setCentros((data ?? []) as CentroCosto[]))
   }, [])
@@ -248,7 +248,7 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                 <select value={cab.solicitante} onChange={e => setCab(c => ({ ...c, solicitante: e.target.value }))}
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
                   <option value="">-- Seleccionar --</option>
-                  {personal.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
+                  {solicitantes.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
                 </select>
               </div>
               <div className="md:col-span-2">
@@ -264,7 +264,7 @@ export default function ModalSalida({ onClose, onSaved }: Props) {
                 <select value={cab.despachador} onChange={e => setCab(c => ({ ...c, despachador: e.target.value }))}
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
                   <option value="">-- Seleccionar --</option>
-                  {personal.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
+                  {despachadores.map((p, i) => <option key={i} value={p.trabajador}>{p.trabajador}</option>)}
                 </select>
               </div>
             </div>
