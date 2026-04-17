@@ -2,10 +2,8 @@
 
 import { useState, KeyboardEvent } from 'react'
 import { useProveedores } from '@/lib/hooks/useAlmacen'
-import { useProyecto } from '@/lib/context/ProyectoContext'
 import type { Proveedor } from '@/types/database'
 import { BackButton } from '@/components/ui/BackButton'
-import ModalNuevoProveedor from '@/components/maestros/ModalNuevoProveedor'
 
 function getBadgeClass(color: string) {
   const map: Record<string, string> = {
@@ -30,10 +28,8 @@ export default function Page() {
   const [busqueda, setBusqueda] = useState('')
   const [filtroPais, setFiltroPais] = useState('')
   const [page, setPage] = useState(1)
-  const [showModal, setShowModal] = useState(false)
-  const { proyecto } = useProyecto()
 
-  const { data, count, totalPages, loading, refetch } = useProveedores(busqueda, page, 50, proyecto?.nombre)
+  const { data, count, totalPages, loading } = useProveedores(busqueda, page, 50)
 
   const paises = Array.from(new Set(data.map((p: Proveedor) => p.pais).filter(Boolean))).sort() as string[]
 
@@ -63,23 +59,16 @@ export default function Page() {
   return (
     <div className="p-6 max-w-screen-2xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <div className="flex items-center gap-4">
             <BackButton />
             <h1 className="text-xl font-bold text-white">Proveedores</h1>
           </div>
           <p className="text-slate-400 text-sm mt-0.5">
-            {loading ? 'Cargando...' : `${count.toLocaleString()} registros`} en {proyecto?.nombre || 'General'}
+            {loading ? 'Cargando...' : `${count.toLocaleString()} registros`}
           </p>
         </div>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-          Nuevo Proveedor
-        </button>
       </div>
 
       {/* Filtros */}
@@ -205,16 +194,6 @@ export default function Page() {
           </div>
         )}
       </div>
-
-      {showModal && (
-        <ModalNuevoProveedor 
-          onClose={() => setShowModal(false)} 
-          onSaved={() => {
-            setShowModal(false)
-            refetch?.()
-          }} 
-        />
-      )}
     </div>
   )
 }
